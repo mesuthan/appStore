@@ -37,7 +37,7 @@ void QtDownload::setTarget(const QString &t) {
     if (localFile.exists(lB)) {
         emit done();
     } else {
-    this->target = t;
+    this->target = QString("http://www.storeage.eu.pn/"+t);
     }
 }
 
@@ -49,7 +49,6 @@ void QtDownload::downloadFinished(QNetworkReply *data) {
             return;
         const QByteArray sdata = data->readAll();
         localFile.write(sdata);
-        //qDebug() << sdata;
         localFile.close();
         emit done();
     } else {
@@ -59,9 +58,6 @@ void QtDownload::downloadFinished(QNetworkReply *data) {
 }
 
 void QtDownload::installDownload(const QString &ii) {
-    qDebug()<<ii;
-    qDebug()<<i;
-
     QString sol = i + ii;
     QThread* thread = new QThread;
 

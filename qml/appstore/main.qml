@@ -9,15 +9,14 @@ PageStackWindow {
     platformInverted: true
     property bool downloading: false
     property bool finished: false
-    function hideLogo() { progressbar.visible=false; logo.visible=false; header.visible=true }
+    function hideLogo() { progressbar.visible=false; logo.visible=false; header.visible=true; rosterView.contentHeight=(repeater.count+1)*70 }
     function connectError() { retryButton.visible=true; errorText.visible=true;  progressbar.visible=false; model.source="" }
     function retry() { retryButton.visible=false; errorText.visible=false;  progressbar.visible=true; model.source="http://storeage.eu.pn/data.xml" }
 
 //------------------------------PAGE---------------------------//
     Flickable {
         id: rosterView
-        anchors { fill: parent; topMargin: 25; bottomMargin: 50 }
-        contentHeight: columnContent.height
+        anchors { fill: parent; topMargin: 25;}
         contentWidth: columnContent.width
         clip:true
         boundsBehavior: Flickable.StopAtBounds
@@ -54,10 +53,11 @@ PageStackWindow {
 //------------------------ALL-APP-LIST--------------------------------//
         Column {
                 id: columnContent
-                anchors.top: header.bottom
+                anchors { top: header.bottom; bottom:parent.bottom }
                 spacing: 0
                 visible:true
                 Repeater {
+                    id:repeater
                     model: model
                     delegate: recipeDelegate
                 }
@@ -70,6 +70,7 @@ PageStackWindow {
         ListItem {
             id: recipe
             platformInverted: true
+
             onClicked: {
                 recipe.state = 'Details';
             }
@@ -110,7 +111,7 @@ PageStackWindow {
                     if(!downloading) {
                         if(!finished) {
                         downloading=true
-                        dlhelper.setTarget(link);
+                        dlhelper.setTarget(sis);
                         dlhelper.download();
                         } else {
                             dlhelper.installDownload(sis)
@@ -268,7 +269,6 @@ PageStackWindow {
          source:"http://storeage.eu.pn/data.xml"
          query: "/catalogue/book"
          XmlRole { name: "title"; query: "title/string()" }
-         XmlRole { name: "link"; query: "link/string()" }
          XmlRole { name: "picture"; query: "picture/string()"}
          XmlRole { name: "sis"; query: "sis/string()"}
          XmlRole { name: "version"; query: "version/string()"}
@@ -285,8 +285,10 @@ PageStackWindow {
 
     InfoBanner {
         id: infobanner1
-        width: 360
-        height: 74
+        onClicked: {
+            infobanner1.close();
+        }
+
         timeout: 2500
         text: "Application installed."
         iconSource: "ui/done.png"
