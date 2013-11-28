@@ -1,7 +1,7 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'qtdownload.h'
 **
-** Created: Sun 24. Nov 21:38:30 2013
+** Created: Thu 28. Nov 19:36:54 2013
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.7.4)
 **
 ** WARNING! All changes made in this file will be lost!
@@ -23,43 +23,47 @@ static const uint qt_meta_data_QtDownload[] = {
        5,       // revision
        0,       // classname
        0,    0, // classinfo
-      14,   14, // methods
+      18,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
        0,       // flags
-       4,       // signalCount
+       5,       // signalCount
 
  // signals: signature, parameters, type, tag, flags
       12,   11,   11,   11, 0x05,
       19,   11,   11,   11, 0x05,
       27,   11,   11,   11, 0x05,
       38,   11,   11,   11, 0x05,
+      44,   11,   11,   11, 0x05,
 
  // slots: signature, parameters, type, tag, flags
-      44,   11,   11,   11, 0x0a,
-      60,   55,   11,   11, 0x0a,
-     108,   93,   11,   11, 0x0a,
-     140,   11,   11,   11, 0x0a,
+      56,   11,   11,   11, 0x0a,
+      67,   11,   11,   11, 0x0a,
+      76,   72,   11,   11, 0x0a,
+      91,   88,   11,   11, 0x0a,
+     106,   11,   11,   11, 0x0a,
+     114,   11,   11,   11, 0x0a,
 
  // methods: signature, parameters, type, tag, flags
-     153,   11,  145,   11, 0x02,
-     165,   11,  145,   11, 0x02,
-     179,  177,   11,   11, 0x02,
-     203,  198,   11,   11, 0x02,
-     223,  220,   11,   11, 0x02,
-     248,   11,   11,   11, 0x02,
+     133,   11,  125,   11, 0x02,
+     145,   11,  125,   11, 0x02,
+     159,  157,   11,   11, 0x02,
+     180,  178,   11,   11, 0x02,
+     202,  197,   11,   11, 0x02,
+     222,  219,   11,   11, 0x02,
+     247,   11,   11,   11, 0x02,
 
        0        // eod
 };
 
 static const char qt_meta_stringdata_QtDownload[] = {
     "QtDownload\0\0done()\0error()\0donefile()\0"
-    "tam()\0download()\0data\0"
-    "downloadFinished(QNetworkReply*)\0"
-    "recieved,total\0downloadProgress(qint64,qint64)\0"
-    "ok()\0QString\0progressr()\0progresst()\0"
-    "t\0setTarget(QString)\0file\0delFile(QString)\0"
+    "tam()\0cancelled()\0download()\0ok()\0val\0"
+    "proccc(int)\0st\0statech(State)\0empty()\0"
+    "downComp()\0QString\0progressr()\0"
+    "progresst()\0t\0setTarget(QString)\0l\0"
+    "setLink(QString)\0file\0delFile(QString)\0"
     "ii\0installDownload(QString)\0"
     "cancelDownload()\0"
 };
@@ -97,21 +101,25 @@ int QtDownload::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         case 1: error(); break;
         case 2: donefile(); break;
         case 3: tam(); break;
-        case 4: download(); break;
-        case 5: downloadFinished((*reinterpret_cast< QNetworkReply*(*)>(_a[1]))); break;
-        case 6: downloadProgress((*reinterpret_cast< qint64(*)>(_a[1])),(*reinterpret_cast< qint64(*)>(_a[2]))); break;
-        case 7: ok(); break;
-        case 8: { QString _r = progressr();
+        case 4: cancelled(); break;
+        case 5: download(); break;
+        case 6: ok(); break;
+        case 7: proccc((*reinterpret_cast< int(*)>(_a[1]))); break;
+        case 8: statech((*reinterpret_cast< State(*)>(_a[1]))); break;
+        case 9: empty(); break;
+        case 10: downComp(); break;
+        case 11: { QString _r = progressr();
             if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = _r; }  break;
-        case 9: { QString _r = progresst();
+        case 12: { QString _r = progresst();
             if (_a[0]) *reinterpret_cast< QString*>(_a[0]) = _r; }  break;
-        case 10: setTarget((*reinterpret_cast< const QString(*)>(_a[1]))); break;
-        case 11: delFile((*reinterpret_cast< const QString(*)>(_a[1]))); break;
-        case 12: installDownload((*reinterpret_cast< const QString(*)>(_a[1]))); break;
-        case 13: cancelDownload(); break;
+        case 13: setTarget((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        case 14: setLink((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        case 15: delFile((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        case 16: installDownload((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        case 17: cancelDownload(); break;
         default: ;
         }
-        _id -= 14;
+        _id -= 18;
     }
     return _id;
 }
@@ -138,5 +146,11 @@ void QtDownload::donefile()
 void QtDownload::tam()
 {
     QMetaObject::activate(this, &staticMetaObject, 3, 0);
+}
+
+// SIGNAL 4
+void QtDownload::cancelled()
+{
+    QMetaObject::activate(this, &staticMetaObject, 4, 0);
 }
 QT_END_MOC_NAMESPACE

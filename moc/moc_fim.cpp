@@ -1,13 +1,13 @@
 /****************************************************************************
 ** Meta object code from reading C++ file 'fim.h'
 **
-** Created: Sun 24. Nov 21:38:30 2013
+** Created: Thu 28. Nov 19:36:53 2013
 **      by: The Qt Meta Object Compiler version 62 (Qt 4.7.4)
 **
 ** WARNING! All changes made in this file will be lost!
 *****************************************************************************/
 
-#include "../fim.h"
+#include "../src/fim.h"
 #if !defined(Q_MOC_OUTPUT_REVISION)
 #error "The header file 'fim.h' doesn't include <QObject>."
 #elif Q_MOC_OUTPUT_REVISION != 62

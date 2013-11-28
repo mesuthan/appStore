@@ -7,14 +7,15 @@ DEPLOYMENT.display_name = "Store"
 QML_IMPORT_PATH =
 ICON = appstore.svg
 
-LIBS += -lapgrfx -lswinstcli -lavkon -leikcdlg -leiksrv -lcone -leikcore -lws32 -lefsrv -lbafl -leikctl -laknnotify
+LIBS += -lapgrfx -lswinstcli -lavkon -leikcdlg -leiksrv -lcone -leikcore -lws32 -lefsrv -lbafl -leikctl
 
 
 DEFINES += QT_USE_FAST_CONCATENATION \
            QT_USE_FAST_OPERATOR_PLUS
 
 symbian:{
-TARGET.CAPABILITY += ReadUserData WriteUserData WriteDeviceData ReadDeviceData NetworkServices UserEnvironment SwEvent TrustedUI
+TARGET.EPOCHEAPSIZE = 0x3700000 0x4100000 #big file downloading #line deleted app not working..
+TARGET.CAPABILITY += ReadUserData WriteUserData WriteDeviceData ReadDeviceData NetworkServices UserEnvironment SwEvent TrustedUI #AllFiles
 TARGET.UID3 = 0xE6002CD5
 rssresources = "SOURCEPATH	." \
 "START RESOURCE appstore2.rss" \
@@ -27,6 +28,7 @@ DEPLOYMENT += addFiles
 
 gccOption = "OPTION gcce -fpermissive"
 MMP_RULES += gccOption
+MMP_RULES += "OPTION gcce -march=armv6 -mfpu=vfp -mfloat-abi=softfp -marm"
 }
 # Speed up launching on MeeGo/Harmattan when using applauncherd daemon
 # CONFIG += qdeclarative-boostable
@@ -35,10 +37,9 @@ QT += network
 CONFIG += qt-components
 
 # The .cpp file which was generated for your project. Feel free to hack it.
-HEADERS += src/qtdownload.h fim.h
+HEADERS += src/qtdownload.h src/fim.h src/download.h
 
-SOURCES += main.cpp \
-           src/qtdownload.cpp fim.cpp
+SOURCES += main.cpp src/qtdownload.cpp src/fim.cpp src/download.cpp
 
 OTHER_FILES += nativesymbiandlg.hrh
 

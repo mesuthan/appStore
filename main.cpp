@@ -12,6 +12,8 @@
 #include <eikapp.h>
 #include <eikappui.h>
 
+#include <download.h>
+
 void loadResFile(const QString& Name)
 {
     TPtrC resFileNameDescriptor (reinterpret_cast<const TText*>(Name.constData()), Name.length());
@@ -26,15 +28,22 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
 {
     QScopedPointer<QApplication> app(createApplication(argc, argv));
     QApplication::setGraphicsSystem("raster");
-
+    loadResFile("appstore2.rsc");
     QmlApplicationViewer viewer;
-    QtDownload dl;
-    viewer.rootContext()->setContextProperty("dlhelper",&dl);
-    viewer.setMainQmlFile(QLatin1String("qml/appstore/main.qml"));
-    viewer.showExpanded();
     viewer.setAttribute(Qt::WA_OpaquePaintEvent);
     viewer.setAttribute(Qt::WA_NoSystemBackground);
     viewer.setAttribute(Qt::WA_LockPortraitOrientation);
-    loadResFile("appstore2.rsc");
+    QtDownload dl;
+    viewer.rootContext()->setContextProperty("dlhelper",&dl);
+    Download pHas;
+    viewer.rootContext()->setContextProperty("dllS",&pHas);
+    //internet connection opening
+    QNetworkConfigurationManager ppp;
+    QNetworkSession *nnn = new QNetworkSession(ppp.defaultConfiguration());
+    nnn->open();
+
+    viewer.setMainQmlFile(QLatin1String("qml/appstore/main.qml"));
+    viewer.showExpanded();
+
     return app->exec();
 }

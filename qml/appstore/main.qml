@@ -9,6 +9,7 @@ PageStackWindow {
     platformInverted: true
     property bool downloading: false
     property bool finished: false
+    property bool cancel: false
     function hideLogo() { progressbar.visible=false; logo.visible=false; header.visible=true; rosterView.contentHeight=(repeater.count+1)*70 }
     function connectError() { retryButton.visible=true; errorText.visible=true;  progressbar.visible=false; model.source="" }
     function retry() { retryButton.visible=false; errorText.visible=false;  progressbar.visible=true; model.source="http://storeage.eu.pn/data.xml" }
@@ -70,7 +71,6 @@ PageStackWindow {
         ListItem {
             id: recipe
             platformInverted: true
-
             onClicked: {
                 recipe.state = 'Details';
             }
@@ -91,7 +91,6 @@ PageStackWindow {
                     if(finished) {
                     finished=false;
                     dlhelper.delFile(sis);
-                        console.log(sis)
                     }
                 }
             }
@@ -105,14 +104,19 @@ PageStackWindow {
                 platformInverted: true
                 onClicked:{
                     if(text=="Cancel") {
-                        //dlhelper.cancelDownload();
+                        dlhelper.cancelDownload();
                     }
 
                     if(!downloading) {
                         if(!finished) {
                         downloading=true
-                        dlhelper.setTarget(sis);
-                        dlhelper.download();
+                            if(!link){
+                                dlhelper.setTarget(sis);
+                                dlhelper.download();
+                            }else{
+                                dlhelper.setLink(link);
+                                dlhelper.download();
+                            }
                         } else {
                             dlhelper.installDownload(sis)
                             finished=false
@@ -176,20 +180,29 @@ PageStackWindow {
             }
             Flickable {
                 id:detailFlick
-                width:topLayout.width
-                height:infoText.height
-                contentHeight: infoText.height
+                contentHeight: detailsContent.height+100
                 clip: true
+                contentWidth: 330
                 opacity:0
                 interactive: false
+                flickableDirection: Flickable.VerticalFlick
                 anchors { top: details.bottom; topMargin: 8;  left:parent.left; leftMargin: 15; bottom:parent.bottom; right:parent.right; rightMargin: 15}
-                Text {
-                    id:infoText
-                    text:dtltext
-                    anchors.fill:parent
-                    wrapMode: Text.Wrap
+                    Column {
+                        id:detailsContent
+                        spacing: 25
+                        height:screenShot.height+infoText.height
+                        Text {
+                            id:infoText
+                            text:dtltext
+                            wrapMode: Text.Wrap
+                            width:330
+                        }
+                        Image {
+                            id:screenShot
+                            source:screenshot
+                        }
+                    }
                 }
-            }
 
             states:
                 State {
@@ -221,8 +234,13 @@ PageStackWindow {
         onTam: {
             infobanner1.open();
         }
-    }
+        onCancelled:
+        {
+            finished=false;
+            downloading=false;
+        }
 
+    }
     Item {
         id:loader
         anchors { horizontalCenter: parent.horizontalCenter
@@ -271,6 +289,8 @@ PageStackWindow {
          XmlRole { name: "title"; query: "title/string()" }
          XmlRole { name: "picture"; query: "picture/string()"}
          XmlRole { name: "sis"; query: "sis/string()"}
+         XmlRole { name: "screenshot"; query: "screenshot/string()"}
+         XmlRole { name: "link"; query: "link/string()"}
          XmlRole { name: "version"; query: "version/string()"}
          XmlRole { name: "dtltext"; query: "dtltext/string()"}
          XmlRole { name: "dev"; query: "dev/string()" }
@@ -285,11 +305,10 @@ PageStackWindow {
 
     InfoBanner {
         id: infobanner1
+        timeout: 2500
         onClicked: {
             infobanner1.close();
         }
-
-        timeout: 2500
         text: "Application installed."
         iconSource: "ui/done.png"
     }
