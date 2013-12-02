@@ -28,12 +28,7 @@ QtDownload::~QtDownload() {
     QFile ii(path);
     ii.remove();
 }
-QString QtDownload::progressr() {
-    return r;
-}
-QString QtDownload::progresst() {
-    return t;
-}
+
 void QtDownload::setTarget(const QString &t) {
     flNa = t;
     QString lB = t.section("/", -1, -1);
@@ -55,10 +50,11 @@ void QtDownload::setLink(const QString &l) {
     }
 }
 void QtDownload::installDownload(const QString &ii) {
-    QString sol = i + flNa;
+    QString sol = i + ii;
+    qDebug()<< sol;
     QThread* thread = new QThread;
     Installer* iiHf = new Installer();
-    iiHf->filInst(sol,flNa);
+    iiHf->filInst(sol,ii);
     m_waitDialog = new (ELeave) CAknWaitDialog(REINTERPRET_CAST(CEikDialog**, &m_waitDialog));
     QT_TRAP_THROWING(m_waitDialog->ExecuteLD(R_WAIT_NOTE_SOFTKEY_CANCEL));
     iiHf->moveToThread(thread);
@@ -72,11 +68,6 @@ void QtDownload::installDownload(const QString &ii) {
 }
 
 void QtDownload::delFile(const QString &file){
-//    QDir dir;
-//    QString path = "C:/private/e6002cd5/" + file;
-//    dir.remove(path); //this not working and changed
-//    qDebug()<<dir.remove(path); // false
-
     QString path = tr("C:\\private\\e6002cd5") + "/" + file;
     QFile ii(path);
     ii.remove();

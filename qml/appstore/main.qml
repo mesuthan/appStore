@@ -10,9 +10,17 @@ PageStackWindow {
     property bool downloading: false
     property bool finished: false
     property bool cancel: false
-    function hideLogo() { progressbar.visible=false; logo.visible=false; header.visible=true; rosterView.contentHeight=(repeater.count+1)*70 }
-    function connectError() { retryButton.visible=true; errorText.visible=true;  progressbar.visible=false; model.source="" }
-    function retry() { retryButton.visible=false; errorText.visible=false;  progressbar.visible=true; model.source="http://storeage.eu.pn/data.xml" }
+    property int headerheight: 70
+    property int itemHeight: 80
+    property bool xmlLoaded: false
+    property bool xmlError: false
+    property string cateFilter: ""
+//---------------VIEWS-------------------//
+    property bool categoriesView: false
+    property bool storeView: false
+    property bool catView: false
+    function xmlErrorF() { retryButton.visible=true; errorText.visible=true;  model.source=""; xmlLoaded=false; xmlError=true}
+    function retry() { retryButton.visible=false; errorText.visible=false;  model.source="http://storeage.eu.pn/data.xml"; xmlError=false }
 
 //------------------------------PAGE---------------------------//
     Flickable {
@@ -20,6 +28,7 @@ PageStackWindow {
         anchors { fill: parent; topMargin: 25;}
         contentWidth: columnContent.width
         clip:true
+        contentHeight:(repeater.count*itemHeight)+headerheight
         boundsBehavior: Flickable.StopAtBounds
         flickableDirection: Flickable.VerticalFlick
         Rectangle {
@@ -27,26 +36,72 @@ PageStackWindow {
             color:"black"
             anchors.top:parent.top
             width:parent.width
-            height:70
+            height:headerheight
+            visible:xmlLoaded
                 Rectangle {
                     id:header2;
-                    radius: 15
+                    radius: 10
                     visible:true
-                    height: 70;
+                    height: headerheight;
                     width: parent.width;
                     anchors.top:parent.top
-                    color:"gray"
+                    color:"#F1F1F1"
                     Rectangle {
                         height:14
-                        color:"gray"
+                        color:"#F1F1F1"
                         width:header.width
-                        anchors.top:parent.top
-                        anchors.topMargin: 56
+                        anchors { bottom:parent.bottom }
+                        Rectangle {
+                            anchors {
+                                bottom:parent.bottom
+                            }
+                            color:"grey"
+                            height:2
+                            width:header.width
+                        }
                     }
+
                     Text {
                         id:headerText
                         anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter; }
                         text: "Store"; font.pointSize: 9;
+                    }
+                    ToolButton{
+                        id:catButton
+                        iconSource: "toolbar-list"
+                        platformInverted: true
+                        visible:(catView) ? false : (categoriesView) ? false : true
+                        onClicked: {
+                            window.state="Categories"
+                            categoriesView=true
+                        }
+                        anchors { right:parent.right; verticalCenter: parent.verticalCenter; }
+                    }
+                    ToolButton {
+                        id:catBack
+                        anchors { left:parent.left; verticalCenter: parent.verticalCenter; }
+                        visible:true
+                        platformInverted: true
+                        iconSource: "toolbar-back"
+                        onClicked: {
+                            if(catView) {
+                                window.state="Categories"
+                                catView=false
+                                return
+                            }
+
+                            if(categoriesView) {
+                                window.state="Store"
+                                categoriesView=false
+                                catView=false
+                                cateFilter=""
+                                return
+                            }
+
+                            else {
+                                Qt.quit()
+                            }
+                        }
                     }
                 }
         }
@@ -55,21 +110,28 @@ PageStackWindow {
         Column {
                 id: columnContent
                 anchors { top: header.bottom; bottom:parent.bottom }
-                spacing: 0
-                visible:true
+                Behavior on y { PropertyAnimation {} }
                 Repeater {
                     id:repeater
-                    model: model
                     delegate: recipeDelegate
+                    model:model
                 }
             }
+        Categories {
+            id:catColumn
+            anchors { top: header.bottom; bottom:parent.bottom }
+            visible:false
+        }
     }
 //-----------------------------DELEGATE----------------------------------------//
+
     Component {
         id: recipeDelegate
 
         ListItem {
             id: recipe
+            height: itemHeight
+            visible: (!cateFilter=="") ? (cat==cateFilter) ? true : false : true
             platformInverted: true
             onClicked: {
                 recipe.state = 'Details';
@@ -106,7 +168,6 @@ PageStackWindow {
                     if(text=="Cancel") {
                         dlhelper.cancelDownload();
                     }
-
                     if(!downloading) {
                         if(!finished) {
                         downloading=true
@@ -144,19 +205,28 @@ PageStackWindow {
 
             Row {
                 id: topLayout
-                x: 10; y: 10; height: appIcon.height; width: parent.width
+                x: 10; y: 15;  height: appIcon.height; width: parent.width;
                 spacing: 10
                 Image {
                     id: appIcon
                     width: 50; height: 50
                     source: picture
+                    clip:true // this is needed
                 }
                 Text {
                     id:appName
                     text: title
                     font.pointSize: 7.5;
-                    anchors.verticalCenter: appIcon.verticalCenter
+                    anchors { verticalCenter: appIcon.verticalCenter; verticalCenterOffset: -10 }
+                    Text {
+                        id:category
+                        text: cat
+                        font.pointSize: 6;
+                        color:"#737373"
+                        anchors { verticalCenter: parent.verticalCenter; verticalCenterOffset: 23 }
+                    }
                 }
+
             }
             Column {
                 spacing: 0
@@ -178,31 +248,74 @@ PageStackWindow {
                 }
 
             }
+            ButtonRow {
+                id:buttonRow
+                width: 330
+                anchors { top: details.bottom; topMargin: 10; horizontalCenter: parent.horizontalCenter }
+//                visible:false
+                opacity:0
+                onOpacityChanged: {
+                    checkedButton=dtl
+                    infoText.visible=true
+                    screenShot.visible=false
+                }
+
+                TabButton{
+                    id:screens
+                    text: "Screens"
+                    platformInverted: true
+                    visible: (screenshot) ? true : false
+                    height: 50
+                    onClicked: {
+                        infoText.visible=false
+                        screenShot.visible=true
+                    }
+                }
+                TabButton{
+                    id:dtl
+                    text: "Details"
+                    height: 50
+                    platformInverted: true
+                    onClicked: {
+                        infoText.visible=true
+                        screenShot.visible=false
+                    }
+                }
+                TabButton{
+                    id:review
+                    text: "More"
+                    height: 50
+                    platformInverted: true
+                    visible: (more) ? true : false
+                    onClicked: {
+                        infoText.visible=false
+                        screenShot.visible=false
+                    }
+                }
+            }
             Flickable {
                 id:detailFlick
-                contentHeight: detailsContent.height+100
+                contentHeight: (infoText.visible) ? infoText.height : screenShot.height+50
                 clip: true
-                contentWidth: 330
                 opacity:0
                 interactive: false
                 flickableDirection: Flickable.VerticalFlick
-                anchors { top: details.bottom; topMargin: 8;  left:parent.left; leftMargin: 15; bottom:parent.bottom; right:parent.right; rightMargin: 15}
-                    Column {
-                        id:detailsContent
-                        spacing: 25
-                        height:screenShot.height+infoText.height
-                        Text {
-                            id:infoText
-                            text:dtltext
-                            wrapMode: Text.Wrap
-                            width:330
-                        }
-                        Image {
-                            id:screenShot
-                            source:screenshot
-                        }
+                anchors { top: details.bottom; topMargin: 60;  left:parent.left; leftMargin: 15; bottom:parent.bottom; right:parent.right; rightMargin: 15}
+                    Text {
+                        id:infoText
+                        text:dtltext
+                        wrapMode: Text.Wrap
+                        Behavior on visible { PropertyAnimation { duration: 150 } }
+                        width:330
                     }
-                }
+                    Image {
+                        id:screenShot
+                        source:screenshot
+                        Behavior on visible { PropertyAnimation { duration: 150 } }
+                        //width: 330
+                        visible:false
+                    }
+            }
 
             states:
                 State {
@@ -214,8 +327,11 @@ PageStackWindow {
                 PropertyChanges { target: rosterView; interactive: false }
                 PropertyChanges { target: dButton; visible:true }
                 PropertyChanges { target: backBnt; visible:true }
+                PropertyChanges { target: buttonRow; opacity: 1 }  //this doesn't slow down the interface
                 PropertyChanges { target: detailFlick; interactive:true;opacity:1 }
             }
+
+
             transitions: Transition {
                 ParallelAnimation {
                     NumberAnimation { duration: 200; properties: "height,contentY,opacity" }
@@ -223,6 +339,7 @@ PageStackWindow {
             }
         }
     }
+//---------------------END-DELEGATE--------------------------//
 
     Connections {
         id:connector
@@ -248,6 +365,7 @@ PageStackWindow {
         }
         ProgressBar {
             id: progressbar
+            anchors.verticalCenterOffset: 80
             anchors { horizontalCenter: parent.horizontalCenter
                       verticalCenter: parent.verticalCenter
             }
@@ -257,11 +375,12 @@ PageStackWindow {
         }
         Text {
             id:errorText
-            visible:false
+            visible:xmlError
             text:"<p>There was a problem opening the Store.</p>
                    <p> Check your connection and try again.</p>"
             anchors { horizontalCenter: parent.horizontalCenter
                       verticalCenter: parent.verticalCenter
+                      verticalCenterOffset: 80
             }
             horizontalAlignment: Text.AlignHCenter
             font.pointSize: 6
@@ -270,18 +389,29 @@ PageStackWindow {
             id:retryButton
             platformInverted: true
             text:"Retry"
-            visible: false
-            anchors { horizontalCenter: parent.horizontalCenter; top:errorText.bottom; topMargin:20 }
+            visible: xmlError
+            anchors { horizontalCenter: parent.horizontalCenter; top:logo.bottom; topMargin:100 }
             onClicked: {
                 retry()
             }
         }
         BorderImage {
             id: logo
-            anchors { verticalCenterOffset: -150; verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
+            visible:(xmlError) ? true : (xmlLoaded) ? false : true
+            anchors { verticalCenterOffset: -50; verticalCenter: parent.verticalCenter; horizontalCenter: parent.horizontalCenter }
             source: "ui/appstore.png"
         }
     }
+
+//---------------------------MODEL-------------------------//
+    ListModel {
+        id:categoriesModel
+        ListElement { name: "Network" }
+        ListElement { name: "Utilities" }
+        ListElement { name: "Games" }
+        ListElement { name: "Clear" }
+    }
+
     XmlListModel {
          id: model
          source:"http://storeage.eu.pn/data.xml"
@@ -294,11 +424,12 @@ PageStackWindow {
          XmlRole { name: "version"; query: "version/string()"}
          XmlRole { name: "dtltext"; query: "dtltext/string()"}
          XmlRole { name: "dev"; query: "dev/string()" }
+         XmlRole { name: "cat"; query: "cat/string()" }
+         XmlRole { name: "more"; query: "more/string()" }
          onStatusChanged: {
-             var ready = (status == XmlListModel.Error)
              switch (status) {
-             case XmlListModel.Error:  connectError();
-             case XmlListModel.Ready:  hideLogo();
+             case XmlListModel.Error:  xmlErrorF();
+             case XmlListModel.Ready:  xmlLoaded=(xmlError) ? false: true
              }
         }
     }
@@ -311,5 +442,29 @@ PageStackWindow {
         }
         text: "Application installed."
         iconSource: "ui/done.png"
+    }
+    states: [
+        State {
+                name:"Categories"
+                PropertyChanges { target:columnContent; visible:false }
+                PropertyChanges { target: catColumn;  visible:true }
+                PropertyChanges { target: headerText;   text:"Categories" }
+            },
+        State {
+                name:"Store"
+                PropertyChanges { target: catColumn;  visible:false }
+                PropertyChanges { target: headerText;   text:"Store" }
+                PropertyChanges { target: columnContent;  visible:true }
+            },
+        State {
+                name:"CView"
+                PropertyChanges { target: catColumn;  visible:false }
+                PropertyChanges { target: columnContent;  visible:true }
+            }
+    ]
+    transitions: Transition {
+        ParallelAnimation {
+            PropertyAnimation { duration: 100; properties: "visible" }
+        }
     }
 }

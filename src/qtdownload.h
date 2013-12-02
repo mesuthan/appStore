@@ -13,8 +13,6 @@ public:
     ~QtDownload();
     QString r;
     QString t;
-    Q_INVOKABLE QString progressr();
-    Q_INVOKABLE QString progresst();
     QString i;
     Q_INVOKABLE void setTarget(const QString& t);
     Q_INVOKABLE void setLink(const QString& l);
@@ -37,10 +35,7 @@ private slots:
 
 public slots:
     Q_INVOKABLE  void download();
-//    void downloadFinished(QNetworkReply* data);
-    //Q_INVOKABLE void downloadProgress(qint64 recieved, qint64 total);
-
-    void ok();//finished m_waitDialog
+    void ok();
 
     void proccc(int val);
     void statech(State st);
