@@ -69,7 +69,7 @@ void Download::com(){
     file->flush();
     file->close();
     if(reply->error()){
-        qDebug()<<"ERROR - COM ; "<<reply->error();        
+        qDebug()<<"ERROR - COM ; "<<reply->error();
         file->remove();
         emit cda();
     }

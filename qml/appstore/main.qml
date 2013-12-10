@@ -1,12 +1,16 @@
 import QtQuick 1.1
 import com.nokia.symbian 1.1
 import com.nokia.extras 1.1
-
+import "storage.js" as Storage
 PageStackWindow {
     id: window
     showStatusBar: true
     showToolBar: false
-    platformInverted: true
+    property bool invertedTheme: null
+    platformInverted: invertedTheme
+    Component.onCompleted: {
+        invertedTheme = (Storage.getSetting("invertedTheme")=="Unknown") ? true : Storage.getSetting("invertedTheme")  // Default = (true)
+    }
     property bool downloading: false
     property bool finished: false
     property bool cancel: false
@@ -15,22 +19,32 @@ PageStackWindow {
     property bool xmlLoaded: false
     property bool xmlError: false
     property string cateFilter: ""
-//---------------VIEWS-------------------//
     property bool categoriesView: false
-    property bool storeView: false
+    property string searchString: ""
+    property bool showDownBar:true
+    property bool storeView: true
     property bool catView: false
     function xmlErrorF() { retryButton.visible=true; errorText.visible=true;  model.source=""; xmlLoaded=false; xmlError=true}
     function retry() { retryButton.visible=false; errorText.visible=false;  model.source="http://storeage.eu.pn/data.xml"; xmlError=false }
-
 //------------------------------PAGE---------------------------//
     Flickable {
         id: rosterView
         anchors { fill: parent; topMargin: 25;}
         contentWidth: columnContent.width
         clip:true
-        contentHeight:(repeater.count*itemHeight)+headerheight
+        contentHeight:(repeater.count*itemHeight)+headerheight+toolbar.height
         boundsBehavior: Flickable.StopAtBounds
         flickableDirection: Flickable.VerticalFlick
+        Sheet {
+            id:sheet
+            acceptButtonText: "Save"
+            toolBarVisible: true
+            title:"Options"
+            platformInverted: invertedTheme
+            content: ConfigAboutPage { }
+            onAccepted: { Storage.initialize(); Storage.setSetting("invertedTheme",invertedTheme) }
+        }
+
         Rectangle {
             id:header
             color:"black"
@@ -45,17 +59,19 @@ PageStackWindow {
                     height: headerheight;
                     width: parent.width;
                     anchors.top:parent.top
-                    color:"#F1F1F1"
+                    color:(!invertedTheme) ? "grey" : "#F1F1F1"
                     Rectangle {
-                        height:14
-                        color:"#F1F1F1"
+                        height:16
+                        color:(!invertedTheme) ? "grey" :"#F1F1F1"
                         width:header.width
                         anchors { bottom:parent.bottom }
                         Rectangle {
+                            id:divider
                             anchors {
                                 bottom:parent.bottom
                             }
-                            color:"grey"
+                            color: "grey"
+                            visible:invertedTheme
                             height:2
                             width:header.width
                         }
@@ -65,14 +81,32 @@ PageStackWindow {
                         id:headerText
                         anchors { horizontalCenter: parent.horizontalCenter; verticalCenter: parent.verticalCenter; }
                         text: "Store"; font.pointSize: 9;
+                        color: (invertedTheme) ? "black" : "white"
+                        MouseArea {
+                            anchors.fill:parent
+                            onClicked: {
+                                sheet.open()
+                            }
+                        }
+                    }
+                    TextField {
+                        id: searchField
+                        width:parent.width-80
+                        height:50
+                        onTextChanged: {
+                            searchString=searchField.text
+                        }
+                        anchors { top:parent.top;  topMargin: 10; right:parent.left }
+                        placeholderText: "Search Here"
                     }
                     ToolButton{
                         id:catButton
                         iconSource: "toolbar-list"
-                        platformInverted: true
+                        platformInverted: invertedTheme
                         visible:(catView) ? false : (categoriesView) ? false : true
                         onClicked: {
                             window.state="Categories"
+                            storeView=false
                             categoriesView=true
                         }
                         anchors { right:parent.right; verticalCenter: parent.verticalCenter; }
@@ -81,9 +115,10 @@ PageStackWindow {
                         id:catBack
                         anchors { left:parent.left; verticalCenter: parent.verticalCenter; }
                         visible:true
-                        platformInverted: true
-                        iconSource: "toolbar-back"
+                        platformInverted: invertedTheme
+                        iconSource:"toolbar-back"
                         onClicked: {
+
                             if(catView) {
                                 window.state="Categories"
                                 catView=false
@@ -95,15 +130,36 @@ PageStackWindow {
                                 categoriesView=false
                                 catView=false
                                 cateFilter=""
+                                storeView=true
                                 return
+                            }
+                            if(window.state == "Search") {
+                                window.state="Store"
+                                searchString=""
                             }
 
                             else {
-                                Qt.quit()
+                                //Qt.quit()
+                                closeYesNo.open();
                             }
                         }
                     }
                 }
+        }
+        QueryDialog {
+            id:closeYesNo
+            titleText: "Warning"
+            message: "Are you sure do you want to close the Store?"
+            acceptButtonText: "Close"
+            rejectButtonText: "Back"
+            platformInverted: invertedTheme
+            onAccepted: {
+                Qt.quit()
+            }
+            onRejected: {
+                close();
+            }
+
         }
 
 //------------------------ALL-APP-LIST--------------------------------//
@@ -119,8 +175,8 @@ PageStackWindow {
             }
         Categories {
             id:catColumn
-            anchors { top: header.bottom; bottom:parent.bottom }
-            visible:false
+            anchors { left: parent.right; top: header.bottom; bottom:parent.bottom }
+            //visible:false
         }
     }
 //-----------------------------DELEGATE----------------------------------------//
@@ -131,10 +187,28 @@ PageStackWindow {
         ListItem {
             id: recipe
             height: itemHeight
-            visible: (!cateFilter=="") ? (cat==cateFilter) ? true : false : true
-            platformInverted: true
+            visible: {
+                if(window.state=="Search") {
+                    var patt = searchString.toLowerCase()
+                    var t = title
+                    if(patt.toLocaleLowerCase().indexOf(title.toLowerCase()) != -1)
+                    {
+                        return true;
+
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                } else {
+                    return (!cateFilter=="") ? (cat==cateFilter) ? true : false : true
+                }
+            }
+                //(!cateFilter=="") ? (cat==cateFilter) ? true : false : true
+            platformInverted: invertedTheme
             onClicked: {
                 recipe.state = 'Details';
+                showDownBar=false
             }
             Item {
                 id: background
@@ -147,12 +221,14 @@ PageStackWindow {
                 anchors { right: parent.right; rightMargin: 10 }
                 visible:false
                 text: "Back"
-                platformInverted: true
+                platformInverted: invertedTheme
                 onClicked: {
                     recipe.state = '';
+                    showDownBar=true
                     if(finished) {
                     finished=false;
                     dlhelper.delFile(sis);
+
                     }
                 }
             }
@@ -163,7 +239,7 @@ PageStackWindow {
                 //enabled: (downloading) ? false : true
                 visible:false
                 text:(!finished) ? (!downloading) ? "Download" : "Cancel" : "Install"
-                platformInverted: true
+                platformInverted: invertedTheme
                 onClicked:{
                     if(text=="Cancel") {
                         dlhelper.cancelDownload();
@@ -211,13 +287,20 @@ PageStackWindow {
                     id: appIcon
                     width: 50; height: 50
                     source: picture
-                    clip:true // this is needed
+                    //clip:true // this is needed
+                    BusyIndicator{
+                        anchors.centerIn: parent
+                        platformInverted: invertedTheme
+                        visible:appIcon.progress<1.0
+                        running:appIcon.progress<1.0
+                    }
                 }
                 Text {
                     id:appName
                     text: title
                     font.pointSize: 7.5;
                     anchors { verticalCenter: appIcon.verticalCenter; verticalCenterOffset: -10 }
+                    color: (invertedTheme) ? "black" : "white"
                     Text {
                         id:category
                         text: cat
@@ -263,7 +346,7 @@ PageStackWindow {
                 TabButton{
                     id:screens
                     text: "Screens"
-                    platformInverted: true
+                    platformInverted: invertedTheme
                     visible: (screenshot) ? true : false
                     height: 50
                     onClicked: {
@@ -275,7 +358,7 @@ PageStackWindow {
                     id:dtl
                     text: "Details"
                     height: 50
-                    platformInverted: true
+                    platformInverted: invertedTheme
                     onClicked: {
                         infoText.visible=true
                         screenShot.visible=false
@@ -285,7 +368,7 @@ PageStackWindow {
                     id:review
                     text: "More"
                     height: 50
-                    platformInverted: true
+                    platformInverted: invertedTheme
                     visible: (more) ? true : false
                     onClicked: {
                         infoText.visible=false
@@ -307,6 +390,7 @@ PageStackWindow {
                         wrapMode: Text.Wrap
                         Behavior on visible { PropertyAnimation { duration: 150 } }
                         width:330
+                        color: (invertedTheme) ? "black" : "white"
                     }
                     Image {
                         id:screenShot
@@ -314,10 +398,16 @@ PageStackWindow {
                         Behavior on visible { PropertyAnimation { duration: 150 } }
                         //width: 330
                         visible:false
+                        BusyIndicator{
+                            platformInverted: invertedTheme
+                            anchors.centerIn: parent
+                            visible:screenShot.progress<1.0
+                            running:screenShot.progress<1.0
+                        }
                     }
             }
 
-            states:
+           states: [
                 State {
                 name: "Details"
                 PropertyChanges { target: recipe; enabled: false }
@@ -329,8 +419,9 @@ PageStackWindow {
                 PropertyChanges { target: backBnt; visible:true }
                 PropertyChanges { target: buttonRow; opacity: 1 }  //this doesn't slow down the interface
                 PropertyChanges { target: detailFlick; interactive:true;opacity:1 }
-            }
 
+            }
+            ]
 
             transitions: Transition {
                 ParallelAnimation {
@@ -349,7 +440,7 @@ PageStackWindow {
             downloading=false
         }
         onTam: {
-            infobanner1.open();
+            infobanner.open();
         }
         onCancelled:
         {
@@ -382,12 +473,13 @@ PageStackWindow {
                       verticalCenter: parent.verticalCenter
                       verticalCenterOffset: 80
             }
+            color: (invertedTheme) ? "black" : "white"
             horizontalAlignment: Text.AlignHCenter
             font.pointSize: 6
         }
         Button {
             id:retryButton
-            platformInverted: true
+            platformInverted: invertedTheme
             text:"Retry"
             visible: xmlError
             anchors { horizontalCenter: parent.horizontalCenter; top:logo.bottom; topMargin:100 }
@@ -404,14 +496,6 @@ PageStackWindow {
     }
 
 //---------------------------MODEL-------------------------//
-    ListModel {
-        id:categoriesModel
-        ListElement { name: "Network" }
-        ListElement { name: "Utilities" }
-        ListElement { name: "Games" }
-        ListElement { name: "Clear" }
-    }
-
     XmlListModel {
          id: model
          source:"http://storeage.eu.pn/data.xml"
@@ -433,38 +517,73 @@ PageStackWindow {
              }
         }
     }
-
     InfoBanner {
-        id: infobanner1
+        id: infobanner
         timeout: 2500
         onClicked: {
-            infobanner1.close();
+            infobanner.close();
         }
         text: "Application installed."
         iconSource: "ui/done.png"
     }
     states: [
         State {
-                name:"Categories"
-                PropertyChanges { target:columnContent; visible:false }
-                PropertyChanges { target: catColumn;  visible:true }
+                name:"Categories" //categories view
+                AnchorChanges { target:columnContent; anchors.right:parent.left }
+                AnchorChanges { target:catColumn; anchors.left:parent.left }
                 PropertyChanges { target: headerText;   text:"Categories" }
             },
         State {
-                name:"Store"
-                PropertyChanges { target: catColumn;  visible:false }
+                name:"Store" // default view
                 PropertyChanges { target: headerText;   text:"Store" }
-                PropertyChanges { target: columnContent;  visible:true }
             },
         State {
-                name:"CView"
+                name:"CView" //showing the categories
                 PropertyChanges { target: catColumn;  visible:false }
-                PropertyChanges { target: columnContent;  visible:true }
-            }
+            },
+        State {
+                name: "Search"
+                //AnchorChanges { target: header; anchors.right: parent.left }
+                AnchorChanges { target: searchField; anchors.horizontalCenter: parent.horizontalCenter }
+                AnchorChanges { target: searchField; anchors.right:null }
+                AnchorChanges { target: toolbar; anchors.top: parent.bottom }
+                AnchorChanges { target: toolbar; anchors.bottom: null }
+        }
     ]
     transitions: Transition {
         ParallelAnimation {
-            PropertyAnimation { duration: 100; properties: "visible" }
+            AnchorAnimation { duration: 200; }
+        }
+    }
+    ToolBar {
+        id:toolbar
+        platformInverted: invertedTheme
+        anchors.bottom:parent.bottom
+        visible:xmlLoaded && showDownBar
+        Behavior on visible { PropertyAnimation { duration:200 }  }
+        opacity:0.95
+        tools:ToolBarLayout {
+            ButtonRow {
+                checkedButton: null
+                ToolButton {
+                    iconSource:"toolbar-list"
+                    onClicked: {
+                        window.state="Categories"
+                        storeView=false
+                        categoriesView=true
+                    }
+                }
+                ToolButton {
+                iconSource: "toolbar-search"
+                onClicked: {
+                    window.state = "Search"
+                }
+                }
+            }
+            ToolButton {
+                iconSource:"toolbar-menu"
+
+            }
         }
     }
 }
