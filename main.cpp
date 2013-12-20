@@ -7,7 +7,7 @@
 #include <QDebug>
 #include <QtDeclarative>
 #include <QCoreApplication>
-
+#include <core.h>
 #include <eikenv.h>
 #include <eikapp.h>
 #include <eikappui.h>
@@ -37,6 +37,8 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
     viewer.rootContext()->setContextProperty("dlhelper",&dl);
     Download pHas;
     viewer.rootContext()->setContextProperty("dllS",&pHas);
+    core f;
+    viewer.rootContext()->setContextProperty("core",&f);
     //internet connection opening
     QNetworkConfigurationManager ppp;
     QNetworkSession *nnn = new QNetworkSession(ppp.defaultConfiguration());
