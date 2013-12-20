@@ -69,6 +69,7 @@ PageStackWindow {
             platformInverted: invertedTheme
             iconSource: "toolbar-list"
             onClicked: window.pageStack.push(Qt.createComponent("CategoriesPage.qml"),{invTheme:window.invertedTheme})
+
         }
         ToolButton {
             flat: true
