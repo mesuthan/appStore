@@ -16,7 +16,7 @@ QString core::getCatFilterName() {
     return catFilterName;
 }
 
-void core::testInstallGUI(const QString &sisname) {
+void core::sisInstallGUI(const QString &sisname) {
     RApaLsSession apaLsSession;
     CleanupClosePushL(apaLsSession );
     User::LeaveIfError(apaLsSession.Connect());

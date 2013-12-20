@@ -13,7 +13,7 @@ public:
     Q_INVOKABLE QString catFilterName;
     Q_INVOKABLE void setCatFilterName(const QString &name);
     Q_INVOKABLE QString getCatFilterName();
-    Q_INVOKABLE void testInstallGUI(const QString &sisname);
+    Q_INVOKABLE void sisInstallGUI(const QString &sisname);
 signals:
     Q_INVOKABLE void categorieChanged();
 public slots:
