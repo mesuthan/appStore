@@ -4,7 +4,7 @@
 #include <QtNetwork/QNetworkReply>
 
 #include <fim.h>
-#include <aknwaitdialog.h>
+
 #include <download.h>
 class QtDownload : public QObject {
     Q_OBJECT
@@ -19,10 +19,10 @@ public:
     Q_INVOKABLE void delFile(const QString& file);
     Q_INVOKABLE void installDownload(const QString &ii);
     Q_INVOKABLE void cancelDownload();
-
+    Q_INVOKABLE void path(const QString& pa);
 private:
     Q_INVOKABLE QString target;
-    CAknWaitDialog* m_waitDialog;
+    QString pan;
     QString flNa;
     Download* downll;
 signals:
