@@ -160,9 +160,10 @@ Page {
                                 dlhelper.download();
                             }
                         } else {
-
-                            core.sisInstallGUI(sis);  // this way is better
-                            //dlhelper.installDownload(sis) than this
+                            if(metHol==true){
+                                core.sisInstallGUI(sis);}  // this way is better
+                            else {
+                                dlhelper.installDownload(sis);} //than this
                             finished=false
                         }
                     }
