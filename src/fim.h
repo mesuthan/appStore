@@ -9,9 +9,10 @@
 class Installer : public QObject {
     Q_OBJECT
 public:
-    Installer();
+    explicit Installer();
     ~Installer();
     int filInst(const QString& uril,const QString &in);
+    Q_INVOKABLE void drive(const QString& aa);
 public slots:
     void process();
     void ex();
@@ -26,5 +27,7 @@ private:
     SwiUI::RSWInstSilentLauncher iBasla; //dont touch
     SwiUI::TInstallOptions iSeck; //dont touch
     SwiUI::TInstallOptionsPckg iSeckPckg; //dont touch
+    int acma;
+    QString ppp;
 };
 #endif // FIM_H
