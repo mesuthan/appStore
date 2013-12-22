@@ -10,9 +10,6 @@
 #include <QDesktopServices>
 #include <QDir>
 
-#include <appstore2.rsg>
-#include <eikprogi.h>
-#include <aknwaitdialog.h>
 #include <QtNetwork>
 
 QtDownload::QtDownload(QWidget *parent) : QObject(parent) {
@@ -50,13 +47,13 @@ void QtDownload::setLink(const QString &l) {
     }
 }
 void QtDownload::installDownload(const QString &ii) {
-    QString sol = i + ii;
-    qDebug()<< sol;
     QThread* thread = new QThread;
     Installer* iiHf = new Installer();
+    iiHf->drive(pan);
+    QString sol = i + ii;
+    qDebug()<< sol;
+
     iiHf->filInst(sol,ii);
-    m_waitDialog = new (ELeave) CAknWaitDialog(REINTERPRET_CAST(CEikDialog**, &m_waitDialog));
-    QT_TRAP_THROWING(m_waitDialog->ExecuteLD(R_WAIT_NOTE_SOFTKEY_CANCEL));
     iiHf->moveToThread(thread);
     QObject::connect(iiHf,SIGNAL(ok()),this,SLOT(ok()),Qt::QueuedConnection);
     QObject::connect(thread, SIGNAL(started()), iiHf, SLOT(process()));
@@ -82,7 +79,6 @@ void QtDownload::cancelDownload() {
     QTimer::singleShot(50,downll,SLOT(cancelDownload()));
 }
 void QtDownload::ok(){
-    QT_TRAP_THROWING(m_waitDialog->ProcessFinishedL());
     emit tam();
 }
 void QtDownload::proccc(int val)
@@ -100,4 +96,9 @@ void QtDownload::downComp(){
 void QtDownload::empty()
 {
     emit cancelled();
+}
+void QtDownload::path(const QString &pa)
+{
+    pan.clear();
+    pan = pa;
 }
