@@ -1,20 +1,25 @@
 import QtQuick 1.1
 import com.nokia.symbian 1.1
 import "storage.js" as Storage
-
+import "drive.js" as Driver
 
 PageStackWindow {
     id: window
     initialPage: MainPage {tools: toolBarLayout}
     showStatusBar: true
     showToolBar: xmlLoaded
-
+    property int driverse:1
+    property bool metHol: true
     property bool invertedTheme: null
     platformInverted: invertedTheme
     Component.onCompleted: {
         Storage.getDatabase(); // do not remove this
         Storage.initialize(); // do not remove this
-        invertedTheme = (Storage.getSetting("invertedTheme")=="Unknown") ? true : Storage.getSetting("invertedTheme")
+        invertedTheme = (Storage.getSetting("invertedTheme")=="Unknown") ? true : Storage.getSetting("invertedTheme");
+//        Driver.getDatabase();
+//        Driver.initialize();
+//        driverse = (Driver.getSetting("driverr")=="Unknown") ? true : Driver.getSetting("driverr")
+        Driver.gtDb()
     }
     property bool downloading: false
     property bool finished: false
